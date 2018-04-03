@@ -13,7 +13,7 @@ import java.util.ArrayList;
  */
 
 public class MyAdapter extends RecyclerView.Adapter<BaseViewHolder> {
-    private ArrayList<Bitmap> mDataset;
+    private ArrayList<String> mDataset;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -28,7 +28,7 @@ public class MyAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(ArrayList<Bitmap> myDataset) {
+    public MyAdapter(ArrayList<String> myDataset) {
         mDataset = myDataset;
     }
 
@@ -38,10 +38,8 @@ public class MyAdapter extends RecyclerView.Adapter<BaseViewHolder> {
                                                    int viewType) {
 
         // create a new view
-//        TextView v = (TextView) LayoutInflater.from(parent.getContext())
-//                .inflate(R.layout.my_text_view, parent, false);
 
-       return new BaseViewHolder(null);
+       return new BaseViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.placeholder_layout, parent, false));
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -50,7 +48,7 @@ public class MyAdapter extends RecyclerView.Adapter<BaseViewHolder> {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
       //  holder.mTextView.setText(mDataset[position]);
-    holder.setupDate();
+    holder.setupDate(mDataset.get(position));
 
 
     }

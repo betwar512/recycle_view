@@ -33,11 +33,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         recycleView = findViewById(R.id.recycle_table);
-        MyAdapter adaptor = new MyAdapter(new ArrayList<Bitmap>());
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+        ArrayList<String> tsr = new ArrayList<>();
+        tsr.add("A");
+        tsr.add("B");
+        tsr.add("C");
+        MyAdapter adaptor = new MyAdapter(tsr);
         recycleView.setAdapter(adaptor);
 
 
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
 
         recycleView.setLayoutManager(mLayoutManager);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);

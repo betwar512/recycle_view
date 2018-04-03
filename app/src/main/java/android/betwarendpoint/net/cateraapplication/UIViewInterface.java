@@ -10,5 +10,4 @@ public interface UIViewInterface {
 
     void initView(View view);
 
-    void setupDate();
 }
