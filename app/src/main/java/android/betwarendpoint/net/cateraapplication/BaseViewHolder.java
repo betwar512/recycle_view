@@ -1,6 +1,8 @@
 package android.betwarendpoint.net.cateraapplication;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -40,6 +42,8 @@ public class BaseViewHolder extends RecyclerView.ViewHolder implements UIViewInt
         LayoutInflater inflater = (LayoutInflater)itemView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         ConstraintLayout lay =   itemView.findViewById(R.id.layout_hold_id);
+
+        if(inflater != null){
         View viewM = inflater.inflate(BASE_LAYOUT, lay);
 
         Log.d("BASEVIEWHOLDER","INITVIEW");
@@ -47,6 +51,7 @@ public class BaseViewHolder extends RecyclerView.ViewHolder implements UIViewInt
             layoutHolder = new BaseView();
             layoutHolder.imageView = viewM.findViewById(R.id.base_image);
             layoutHolder.textView = viewM.findViewById(R.id.textView);
+           }
         }
 
 
@@ -54,9 +59,12 @@ public class BaseViewHolder extends RecyclerView.ViewHolder implements UIViewInt
     }
 
 
-    public void setupDate(String string) {
+    public void setupDate(String uri,Bitmap image) {
         Log.d("BASEVIEWHOLDER","SETUP");
-            layoutHolder.textView.setText(string);
+        if( layoutHolder != null){
+            layoutHolder.textView.setText(uri);
+            layoutHolder.imageView.setImageBitmap(image);
+        }
     }
 
 
