@@ -1,4 +1,4 @@
-package android.betwarendpoint.net.cateraapplication;
+package android.betwarendpoint.net.cateraapplication.view;
 
 import android.view.View;
 
