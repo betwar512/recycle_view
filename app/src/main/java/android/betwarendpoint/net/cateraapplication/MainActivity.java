@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -37,6 +38,8 @@ import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,6 +51,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
+import javax.sql.DataSource;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -80,7 +92,7 @@ public class MainActivity extends AppCompatActivity{
 
         recycleView.setLayoutManager(mLayoutManager);
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> dispatchTakePictureIntent());
+        fab.setOnClickListener(view -> createSelectFileDialog());
 
 
 //        Button downloadButton =  findViewById(R.id.downloadbutton);
@@ -213,8 +225,49 @@ public class MainActivity extends AppCompatActivity{
             }
 
 
+        }else if (requestCode == PRAMA_REQUEST_FOLDER_CODE) {
+            Uri uri = data.getData();
+            String uriString = uri != null? uri.toString() :"";
+            File myFile = new File(uriString);
+            String path = myFile.getAbsolutePath();
+            String displayName = null;
+
+            if (uriString.startsWith("content://")) {
+                Cursor cursor = null;
+                try {
+                    cursor = getContentResolver().query(uri, null, null, null, null);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    }
+                } finally {
+                    Objects.requireNonNull(cursor).close();
+                }
+            } else if (uriString.startsWith("file://")) {
+                displayName = myFile.getName();
+            }
+
+
+            BodyPart messageBodyPart = new MimeBodyPart();
+            javax.activation.DataSource source =new FileDataSource(path);
+
+
+            try {
+                messageBodyPart.setDataHandler(new DataHandler(source));
+                messageBodyPart.setFileName(displayName);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+
+            Multipart multipart = new MimeMultipart();
+            try {
+                multipart.addBodyPart(messageBodyPart);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+             multipart.toString();
         }
-    }
+        }
+
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
@@ -365,4 +418,58 @@ public class MainActivity extends AppCompatActivity{
 
 
 
+    /**
+     * Create dialog to select input file type
+     * TEST
+     */
+    public void createSelectFileDialog(){
+
+        if(checkPermission()) {
+            String[] strs = {"From Camera", "From File"};
+            final int[] selectedItem = {0};
+            MaterialDialog.Builder mtb = new MaterialDialog.Builder(this);
+            mtb.title("Select input")
+                    .items(strs)
+                    .itemsCallbackSingleChoice(selectedItem[0], (dialog, itemView, which, text) -> {
+                        selectedItem[0] = which;
+                        return true;
+                    }).positiveText("Select")
+                    .onPositive((dialog, which) -> {
+                        switch (selectedItem[0]) {
+                            case 0:
+                                dispatchTakePictureIntent();
+                                break;
+                            case 1:
+                                startFileSystemSelect();
+                                break;
+                        }
+                    }).negativeText("Cancel")
+                    .onNegative((dialog, which) -> dialog.dismiss())
+                    .alwaysCallSingleChoiceCallback()
+                    .show();
+        }
+    }
+
+
+    static final int PRAMA_REQUEST_FOLDER_CODE = 876;
+
+    private void startFileSystemSelect(){
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        startActivityForResult(intent , PRAMA_REQUEST_FOLDER_CODE);//one can be replaced with any action code
+    }
+
+    private boolean checkPermission(){
+
+             if(ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE ,Manifest.permission.READ_EXTERNAL_STORAGE },
+                    10);
+            return false;
+           }
+           return true;
+        }
 }
